@@ -1,0 +1,1280 @@
+Pour ce projet  je vais faire une plateforme web  avec authentification 
+ une fois sur la page d’accueil il y aura dans la sidebar  Nouvel audit , Slides, Progression
+Nb les images sont tous sous forme url ils sont tous enregistrer dans cloudinary donc seul les urls des captures iront dans airtable 
+
+Ce projet va utiliser  playwright  pour la capture d'écran  et l’ia pour  rogner et la précision  
+utiliser l’api google pour Pagespeed insights  pour récupérer les pourcentage mobile et desktop 
+Sur le formulaire de création de l’audit le client doit fournir les infos suivantes  qui seront automatiquement enregistre dans les champs respectifs pour un audit 
+Nom site :”Nom de site”
+Lien site :”URL Site”
+lien google sheet de l’audit avec les droits éditeurs  et  les noms des feuilles
+ inchangés:”Lien Google Sheet”
+Lien du google sheet du plan d’action avec  les droits éditeurs  et  les noms des feuilles inchangés :”Lien Google Sheet plan d'action”
+Lien du rapport d’audit de my ranking metrics :”Lien du rapport my ranking metrics”
+ 
+Une fois ajouté le champs “Statut” doit passer automatiquement à “A faire” et “fait”si l’audit est terminée  
+
+ Les captures à faire :
+
+Sites à capturer
+
+page robot contenant la partie sitemap(s)  en carré de 400px autour du sitemap(s)   et l’enregistrer dans le champs airtablen” Img_Robots_Txt” et le lien  du robots.txt dans le champs “robot “ de type texte mais on peut y mettre l’url 
+
+ Aller sur ce sitemap(s) repérer sur la page robot et faire la capture de l’affichage et le rogner afin qu’elle soit maniable dans un slide   enregistrer cette capture dans le champs “Img_Sitemap”   et enregistrer le lien du sitemap(s) dans le champ”sitemaps” type texte mais on peut y mettre l’url .Si il n’y avait pas de sitemaps  afficher dans le fichier robot.txt alors aucune capture de sitemap(s) ne sera faite et  dans le champs “sitemaps” qui doit contenir le lien du sitemap(s) on envoit le message “Le fichier sitemap(s) n’existe pas” 
+
+Venons au champs logo “Img_Logo”  et ben lui il  va contenir le logo du site  dont on est en train de faire l’audit  voilà  le logo peut être sous n’importe quelle format (favicon, jpeg, png, webp etc )
+
+Ensuite  la page Pagespeed Insight 
+Disponible sur ce lien https://pagespeed.web.dev/   une fois dessus  y mettre le lien du site et cliquer sur le bouton Analyser   et attendre que les infos se chargent une fois chargée  et bien   scroller un peu vers le bas et  s'arrêter sur la partie  nommée exactement comme suit “Analysez les problèmes de performances” Capturez  l’affichage de l'écran entière  qui contient bien entendu la partie allant de “Analysez les problèmes de performances”” jusqu’à  quelques millimètres avant ce titre ou sous titre ou h1 en tout cas ce nom”Statistiques”  
+sur cette page il faut faire deux captures d'écrans un pour mobile et un pour desktop 
+ L'onglet mobile s'affiche par défaut  et on doit aller sur la partie desktop pour pouvoir faire la capture de cette partie en suivant les mêmes délimitations. Une fois capturé envoyer ces deux captures à l'IA pour qu’il rogne mieux les bord et ne laisse que la partie demandée précédemment si playwright n’a pas pu le faire correctement.  L’IA ne fera pas que rogner il doit extraire le pourcentage  dans la donote  la plus grande et envoyer en précisant  mobile :nombre  et pareil pour desktop   et ensuite ces nombres seront enregistrées dans les champs “pourcentage smartphone” pour mobile et “pourcentage desktop” pour desktop  et en ce qui concerne la capture afite  et rogner par l’IA ils seront respectivement enregistrer dans airtable dans les champs “Img_PSI_Mobile” et “Img_PSI_Desktop”
+
+
+On passe au suivant  le robot soit se rendre sur le site https://amiresponsive.co.uk/  Pour Am I Responsive (l'outil qui montre le site sur 4 écrans : ordi, portable, tablette, mobile), voici la procédure du robot : le robot doit generer uen url speciale comme ceci “http://amiresponsive.co.uk/?site=votre-site.com qui charge automatiquement le site dans les cadres.Il va sur cette page et attend que le bloc contenant les appareils (.devices) soit visible.Il patiente quelques secondes supplémentaires pour s'assurer que l'animation d'apparition est finie et que le site est bien chargé dans les petits écrans.Certains sites bloquent l'affichage dans des "iframes" (options de sécurité X-Frame-Options ou CSP). Si c'est le cas, les écrans resteraient blancs.Le robot vérifie cela techniquement. Si le site bloque l'affichage, il ajoute automatiquement un bandeau rouge en haut de l'image pour vous prévenir : "SITE BLOCKS IFRAMES / CSP".Capture : Il prend une photo uniquement du groupe d'appareils, sans le reste de la page (pub, menu du site AmIResponsive, etc.) puis enregistrer l’image dans le champs “Img_AmIResponsive” de airtable 
+
+ Ensuite on va sur https://www.ssllabs.com/ssltest/   Voici exactement ce que doit faire le  robot quand il arrive sur SSL Labs ,Il entre l'URL du site et clique sur "Submit".Le robot attend que l'analyse commence.Si le domaine pointe vers plusieurs serveurs (fréquent avec les CDN comme Cloudflare), il clique automatiquement sur le lien de la première adresse IP trouvée dans la liste pour voir le détail de ce serveur. Une fois sur la page de résultats complète, il cherche le titre "Summary".Il prend une photo du bloc qui contient ce titre "Summary". C'est généralement la partie haute avec la note (A, B, C...) et le graph de couleurs. et enregistrer la capture dans le champs “Img_SSL”
+
+Vérification de domaine 
+
+ Passons à la vérification de domaine  sur semrush , ahref et uberswaggs
+Le robot doit se rendre sur  Le robot va sur semrush.com, Il ferme les bannières cookies et les popups promotionnels qui pourraient gêner.Il entre le domaine et clique sur le bouton  "Vérifier l'autorité".il fait la capture de la page entière et une fois faite  c’est envoyer à l'ia qui doit rogner et ne laisser que la grande carte  (autority score) et les  les deux petites cartes en dessus de lui nommés respectivement autority score et backlinks
+le champs airtable “Img_autorité_domaine_AHREF”
+
+Pour ahrefs Website Authority Checker
+Le robot doit être capable Le robot est capable de détecter la case "Vérifiez que vous êtes humain" de Cloudflare.Il clique dessus automatiquement s'il la voit. Il entre ensuite dans le domaine et lance l'analyse.Si Ahrefs redemande "êtes-vous humain ?"  le robot doit être capable de le revérifier  et Une fois le résultat affiché il prend la photo et envoies à l'ia qui va rogner et ne laisser que “Domain Rating “et “Rang d’URL “champs “Img_autorité_domaine_AHREF”
+
+Pour UBERSUGGEST l’utilisateur a besoind e se connecter et le robot doit récupérer la session  comme avec gsc et mrm  et une fois sur la page il va dans l’onglet “Analyse du trafic” et  mets dans la barre de recherche l’url du site et  attends que ca charge et ensuite faire la capture et envoyer la capture à l’ia qui va rogner et ne laisser que la carte   écrit comme suit “DOMAIN AUTORITY”  et ensuite l’enregistrer dans le champs “Img_autorité_domaine_UBERSUGGEST” de airtable 
+
+ Sheet d’audit 
+Venons maintenant aux sheets  et bien la on prends le sheet du champs “Lien Google Sheet “ et on accède à la feuille “Images”   de ce sheet et on  va trier la colonne nommée “ Taille(octets)” par ordre décroissant  puis faire la capture une fois faite on l’envois à l'ia pour qu’elle rogne et ne renvoies que en longueur deux colonnes “Destination” et  “ Taille(octets)”    et en lignes seuls les lignes avec de nombres dans la colonne taille supérieure ou égale  à 100 ko et cette version rognée sera enregistrée dans le champs”Img_Poids_image”   de airtable 
+
+Dans ce même sheet   on va dans l’onglet “Même title” et on capture la feuille et on envoi à l'IA qui va rogner  au millimètre près  et qui va être ensuite  envoyé à dans le champs “Img_meme_title” de airtable  
+
+ Ensuite l’onglet Même balise meta desc  du même sheet et capturer la feuille et l’envoyer a l’IA pour la même opération on récupère l’image rogner par l’ia et on l’envoi dans le champ” Img_meta_description_double” dans airtable 
+
+
+Ensuite aller dans “Doublons H1”  et effectuer exactement la même opération et enregistrer ici dans le champs “Img_balise_h1_double”
+
+Ensuite aller dans “Balises H1-H6” et filtrer avec le paramètre “oui” sur la colonne “H1 absente” et faire la capture envoyer à l’ia et  rogner pour ne laisser que les deux colonnes   “URL” et “H1 absente” et enregistrer dans le champ“Img_balise_h1_absente” dans airtable   puis vérifier si dans la colonne” que des H1 vides “ n’a pas de oui  si il a de oui on filtre de sorte que les oui sont en haut donc en croissant  et ensuite faire la capture et enregistrer dans le champ”Img_que des H1 vides” dans airtable et ensuite  faire la même opération pour la colonne “au moins une H1 vide”  toujours sur la même feuille sheet et si il y a un oui faire le trie par ordre croissant afin que les oui de cette colonne soient en haut et faire la capture et mettre dans airtable dans le champ “Img_au moins une H1 vide”  ensuite ce sera la colonne “1ère balise Hn n'est pas H1” faire la meme operation et enregistrer dans” Img_1ère balise Hn n'est pas H1” dans airtable  evidemment avant d’envoyer dans airtable l’ia doit s’assurer que le trie a etet fait et faire le rognage  juste afin de ne pas laisser des  non  apparaitre dans les tries  et aussi si dans une colonne on a que des non sauter et ne pas faire la capture pour cette colonne la 
+Puis toujours dans cette colonne on recherche dans la colonne “Sauts de niveau entre les Hn”  et on  va  filtrer par ordre décroissant et faire la capture de  ceux qui ne sont pas zéro  et ensuite envoyer à l'ia pour qu’il s’assure que tout est bon  et conforme à ce qui est voulu et ensuite l’image rogner par l’ia sera envoyé  dans le champs “Img_Sauts de niveau entre les Hn”
+Ensuite on va dans la colonne  “Hn trop longue” et on filtre  par ordre décroissant  et on fait la capture et on garde les lignes ou la valeurs de cette colonnes est égale à 1  c’est littéralement le même procédé pour les captures de cette feuille qu’on a vu précédemment  et on enregistre celui ci dans “Img_Hn trop longue”
+
+
+On va changer de feuille et aller dans la feuille “Nb de mots body” puis  faire un filtre sur la colonne “Gravité du problème de taille du contenu (le pire étant 100)”  un trie d’ordre décroissant  et une fois fait  faire la capture des 10 premières lignes  et mettre dans “Img_longeur_page” dans airtable
+
+
+
+
+
+
+
+
+
+
+
+Ensuite aller dans” Meta desc”  et trier   il faut  appliquer un filtre a cette colonne “Nb de caractères dans la balise meta description” pour trier par ordre croissant et capturer et envoyer à l'ia une fois chez l’ia il rogne et garde ceux qui on “Nb de caractères dans la balise meta description”  =0  et l’envoyer maintenant dans le champs” Img_meta_description” dans airtable 
+
+Ensuite dans la feuille “Balise title” toujours du même sheet  et  le robot trie la colonne “État balise title”  avec paramètre “trop longue”  et faire la capture d’écran et l’envoyer à l’IA pour rogner  comme il faut  et envoyer le résultat et qui sera msi dans le champs “Img_balises_title” de airtable 
+
+
+Sheet plan d’action 
+Passons au deuxième sheet celui qui va se trouver dans le champ “Lien Google Sheet plan d'action” de airtable  
+on va dans l’onglet “Synthèse Audit - Plan d'action” et o n fait la capture d'écran de l’affichage et envoyer à l’ia pour rogner les bords et menus de sheets  afin de ne laisser voir que  le tableau   et enregistrer cette imag érogène dans le champ “Img_planD'action” de airtable 
+
+Ensuite toujours dans ce même sheet  on va dans la feuille “Requêtes Clés / Calédito” on suit le processus (capture envoies à l'ia , rognage et envois a airtable “ dans le champs “Img_Requetes_cles”
+
+Ensuite on va dans la feuille Données Images et on enregistre la capture dans Img_donnee image après le traitement de l’ia 
+ 
+Ensuite  on va dans la feuille Longueur de page  et on  enregistre la capture dans “Img_longeur_page” après le traitement de l’ia 
+
+
+
+ Google Search Consol 
+
+On va utiliser  L'approche officielle et sécurisée : Google OAuth 2.0.L'utilisateur clique sur un bouton "Se connecter avec Google" sur votre site  Il est redirigé vers une page officielle de Google. Une fois qu'il accepte, Google renvoie un Access Token à votre serveur. L'utilisateur clique sur un bouton "Se connecter avec Google" sur votre site. Il est redirigé vers une page officielle de Google. Une fois qu'il accepte, Google renvoie un Access Token à votre serveur.Une fois que vous avez le token, vous pouvez l'injecter dans le contexte de Playwright pour que le robot soit authentifié comme l'utilisateur. Une fois le robot connecté et bien il doit aller dans l’onglet “Sitemaps” de GSC et  faire la capture et l’envoyer à l'ia pour qu’il rogne et ne renvoies que les sitemaps déclarés donc évidemment pas toute la page capturé  puis l’enregistrer dans “Img_sitemap_declaré” dans airable 
+
+Puis aller dans l’onglet Https et faire la capture de la page et l’envoyer à l’ia pour qu’il ne renvoies que la partie  du graphe coloree en vert la    et  sera enregistré dans le champ “Img_https” dans airtable 
+
+
+My ranking metrics 
+On va utiliser la même stratégie pour se connecter à My ranking metrics  et après connexion le robot prends le lien du rapport présent dans le champs “Lien du rapport my ranking metrics”  et  aller sur le lien et rechercher “Profondeur des pages et maillage interne” exactement écris comme cela  et   défiler jusqu’à la partie tableau et  faire la capture  et envoyer à l’IA qui va bien rogner de sortie à ne laisser que le tableau sur l’image et une fois fait l’imag est envoyé dans airtable dans le champ “Img_profondeur_clics”
+
+Backlinks 
+ le robot doit entrer l’url du site  dans le navigateur et s’assure d'être sur le site   et  utiliser une extension  chrome  “Note majestic”  bon celui la on va le laisser d'abord 
+
+
+
+
+ 
+voici la clé API  de l’ia :[REDACTED_OPENAI_KEY]
+ 
+ et voici les identifiants de la base airtable 
+API_KEY = "[REDACTED_AIRTABLE_KEY]"
+BASE_ID = "[REDACTED_BASE_ID]"
+TABLE_ID = "[REDACTED_TABLE_ID]"
+ et ceux dee  cloudinary a
+  cloud_name = "[REDACTED_CLOUDINARY_NAME]",
+  api_key = "[REDACTED_CLOUDINARY_KEY]",
+  api_secret = "[REDACTED_CLOUDINARY_SECRET]",
+  secure = True
+
+
+
+
+ voici le plan de realisation qu etu vas suivre comme ton maitre  ha ha
+
+
+
+ # PLAN GLOBAL COMPLET — PLATEFORME AUDIT SEO AUTOMATISÉ
+### Version finale — Toutes contraintes couvertes
+
+---
+
+## PARTIE 0 — DÉCISIONS ARCHITECTURALES DÉFINITIVES
+
+Avant toute action, ces décisions sont figées et ne changent plus.
+
+**Stack technique**
+- Backend : Node.js + Express sur Railway
+- Image Docker : `mcr.microsoft.com/playwright/node:latest`
+- File de jobs : BullMQ + Redis (plugin Railway)
+- DB interne : PostgreSQL (plugin Railway)
+- Temps réel : WebSocket (socket.io)
+- Rognage : Sharp (Node.js)
+- Captures : Playwright (Chromium headless)
+- IA : GPT-4o Vision (rognage + extraction + décisions)
+- Stockage images : Cloudinary
+- Données audit : Airtable
+
+**Principe IA-first pour toutes les captures**
+Playwright fait la capture brute → GPT-4o rogne et extrait → Sharp applique le crop → Cloudinary stocke → Airtable reçoit l'URL. Aucun crop en pourcentage fixe dans le code.
+
+**Principe sessions tierces (Ubersuggest, MRM)**
+Playwright visible → utilisateur se connecte lui-même → cookies capturés automatiquement → chiffrés AES-256 → stockés en DB → réinjectés à chaque audit.
+
+**Conflict résolu**
+`Img_longeur_page` devient deux champs distincts dans Airtable :
+- `Img_longeur_page` → feuille "Nb de mots body" du sheet audit
+- `Img_longeur_page_plan` → feuille "Longueur de page" du sheet plan d'action
+
+**Ordre d'exécution des captures (stratégique)**
+1. Robots.txt + Sitemap + Logo (sans auth, sans risque)
+2. AmIResponsive (sans auth)
+3. SSL Labs (sans auth, lent → lancer tôt)
+4. PageSpeed Mobile + Desktop (Playwright + IA)
+5. Google Sheets audit (OAuth Google)
+6. Google Sheets plan d'action (OAuth Google)
+7. Google Search Console (OAuth Google)
+8. My Ranking Metrics (session utilisateur)
+9. Ubersuggest (session utilisateur)
+10. Semrush (anti-bot risqué → en avant-dernier)
+11. Ahrefs (anti-bot le plus risqué → en dernier)
+
+---
+
+## PARTIE 1 — INFRASTRUCTURE RAILWAY
+
+### ACTION 1.1 — Créer le projet Railway
+- Nouveau projet Railway
+- Ajouter le service principal Node.js
+- Choisir l'image Docker : `mcr.microsoft.com/playwright/node:latest`
+- Cette image contient Chromium, ses dépendances système et Node.js
+- Sans cette image, Playwright ne tourne pas sur Railway
+- Allouer minimum 2GB RAM (Playwright est gourmand)
+- Configurer le healthcheck : GET /health → réponse 200 → Railway redémarre si ça ne répond plus
+
+### ACTION 1.2 — Ajouter les plugins Railway
+- Plugin Redis → BullMQ en a besoin
+- Plugin PostgreSQL → DB interne
+- Récupérer les URLs de connexion générées automatiquement par Railway
+
+### ACTION 1.3 — Configurer toutes les variables d'environnement
+```
+AIRTABLE_API_KEY=
+AIRTABLE_BASE_ID=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+OPENAI_API_KEY=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=
+REDIS_URL=
+DATABASE_URL=
+JWT_SECRET=
+SESSION_ENCRYPT_KEY=    ← clé AES-256 pour chiffrer les cookies Ubersuggest/MRM
+DRY_RUN=false           ← passer à true pendant les tests pour ne pas écrire dans Airtable
+PORT=3000
+```
+Ne jamais mettre ces valeurs dans le code. Uniquement dans les variables Railway.
+
+### ACTION 1.4 — Structure des dossiers du projet
+```
+/src
+  /routes
+    auth.js
+    audits.js
+    sessions.js       ← gestion connexions Ubersuggest/MRM
+    health.js
+  /controllers
+    auditController.js
+    sessionController.js
+  /services
+    /airtable
+      read.js
+      write.js
+    /cloudinary
+      upload.js
+    /playwright
+      browser.js      ← pool de navigateurs
+      robots.js
+      sitemap.js
+      logo.js
+      psi.js
+      ami.js
+      ssl.js
+      sheets.js
+      gsc.js
+      mrm.js
+      ubersuggest.js
+      semrush.js
+      ahrefs.js
+    /ai
+      crop.js         ← rognage GPT-4o
+      decide.js       ← décisions imprévues GPT-4o
+      extract.js      ← extraction de valeurs (scores PSI)
+    /google
+      oauth.js
+      sheets.js
+    /sessions
+      encrypt.js
+      store.js
+  /jobs
+    queue.js          ← configuration BullMQ
+    worker.js         ← logique principale du worker
+    steps/            ← un fichier par étape
+      robots.js
+      sitemap.js
+      logo.js
+      psi.js
+      ami.js
+      ssl.js
+      sheets_audit.js
+      sheets_plan.js
+      gsc.js
+      mrm.js
+      ubersuggest.js
+      semrush.js
+      ahrefs.js
+  /middleware
+    auth.js
+    validate.js
+  /db
+    schema.sql
+    queries.js
+  /utils
+    logger.js
+    sharp.js          ← helpers Sharp pour le crop
+    retry.js
+/public
+  /css
+  /js
+  index.html
+  progression.html
+  slides.html
+  settings.html
+/.env.example
+/Dockerfile
+/docker-compose.yml   ← pour développement local
+```
+
+---
+
+## PARTIE 2 — BASE DE DONNÉES INTERNE
+
+### ACTION 2.1 — Créer le schéma PostgreSQL
+
+**Table users**
+```
+id (UUID, PK)
+email (TEXT, UNIQUE)
+password_hash (TEXT)
+google_refresh_token (TEXT, chiffré)
+created_at (TIMESTAMP)
+```
+
+**Table audits**
+```
+id (UUID, PK)
+user_id (UUID, FK users)
+nom_site (TEXT)
+url_site (TEXT)
+sheet_audit_url (TEXT)
+sheet_plan_url (TEXT)
+mrm_report_url (TEXT)
+airtable_record_id (TEXT)     ← ID de l'enregistrement Airtable créé
+statut_global (TEXT)          ← EN_ATTENTE / EN_COURS / TERMINE / TERMINE_ERREURS
+created_at (TIMESTAMP)
+```
+
+**Table audit_steps**
+```
+id (UUID, PK)
+audit_id (UUID, FK audits)
+step_key (TEXT)               ← ex: "robots_txt", "psi_mobile"
+statut (TEXT)                 ← EN_ATTENTE / EN_COURS / IA_EN_COURS / SUCCES / SKIP / ERREUR / INTERVENTION
+attempts (INTEGER, default 0)
+error_message (TEXT)
+output_cloudinary_url (TEXT)
+output_value (TEXT)           ← pour les valeurs texte (scores PSI, URL robots, etc.)
+started_at (TIMESTAMP)
+ended_at (TIMESTAMP)
+```
+
+**Table audit_events**
+```
+id (UUID, PK)
+audit_id (UUID, FK)
+step_key (TEXT)
+type (TEXT)                   ← LOG / WARN / ERROR / AI_DECISION
+message (TEXT)
+timestamp (TIMESTAMP)
+```
+
+**Table user_sessions**
+```
+id (UUID, PK)
+user_id (UUID, FK)
+service (TEXT)                ← "ubersuggest" / "mrm"
+encrypted_cookies (TEXT)      ← JSON chiffré AES-256
+expires_at (TIMESTAMP)
+created_at (TIMESTAMP)
+```
+
+### ACTION 2.2 — Créer les index PostgreSQL
+- Index sur `audit_steps.audit_id` → les requêtes de progression sont fréquentes
+- Index sur `audit_events.audit_id`
+- Index sur `user_sessions.user_id + service`
+
+---
+
+## PARTIE 3 — BASE AIRTABLE
+
+### ACTION 3.1 — Créer la base Airtable avec exactement ces champs
+
+| Nom du champ | Type Airtable |
+|---|---|
+| Nom de site | Texte |
+| URL Site | URL |
+| Lien Google Sheet | URL |
+| Lien Google Sheet plan d'action | URL |
+| Lien du rapport my ranking metrics | URL |
+| Statut | Sélection unique : A faire / En cours / Terminé / Terminé avec erreurs |
+| robot | Texte (contiendra l'URL du robots.txt) |
+| sitemaps | Texte (URL ou "Le fichier sitemap(s) n'existe pas") |
+| Img_Robots_Txt | URL (Cloudinary) |
+| Img_Sitemap | URL |
+| Img_Logo | URL |
+| pourcentage smartphone | Nombre |
+| pourcentage desktop | Nombre |
+| Img_PSI_Mobile | URL |
+| Img_PSI_Desktop | URL |
+| Img_AmIResponsive | URL |
+| Img_SSL | URL |
+| Img_autorité_domaine_SEMRUSH | URL |
+| Img_autorité_domaine_AHREF | URL |
+| Img_autorité_domaine_UBERSUGGEST | URL |
+| Img_Poids_image | URL |
+| Img_meme_title | URL |
+| Img_meta_description_double | URL |
+| Img_balise_h1_double | URL |
+| Img_balise_h1_absente | URL |
+| Img_que des H1 vides | URL |
+| Img_au moins une H1 vide | URL |
+| Img_1ère balise Hn n'est pas H1 | URL |
+| Img_Sauts de niveau entre les Hn | URL |
+| Img_Hn trop longue | URL |
+| Img_meta_description | URL |
+| Img_balises_title | URL |
+| Img_longeur_page | URL |
+| Img_planD'action | URL |
+| Img_Requetes_cles | URL |
+| Img_donnee_image | URL |
+| Img_longeur_page_plan | URL |
+| Img_sitemap_declaré | URL |
+| Img_https | URL |
+| Img_profondeur_clics | URL |
+
+---
+   voici les chamsp qui sont dans airble   ""Nom de site,URL Site,Lien Google Sheet,Lien Google Sheet plan d'action,Lien du rapport my ranking metrics,Génération,Date,Statut,Document Slide Généré,Img_Robots_Txt,robot,Img_Sitemap,sitemaps,Img_Logo,Img_SSL,Img_AmIResponsive,Img_PSI_Mobile,pourcentage smartphone,Img_PSI_Desktop,pourcentage desktop,Img_404,lien_404,Img_Poids_image,Img_balises_title,Img_meme_title,Img_Requetes_cles,Img_meta_description_double,Img_balise_h1_double,Img_balise_h1_absente,Img_longeur_page,Img_autorité_domaine_SEMRUSH,Img_autorité_domaine_AHREF,Img_planD'action,Img_donnee image,Img_meta_description,Img_profondeur_clics_mrm,Img_autorité_domaine_UBERSUGGEST,Img_BACKLINKS,Img_urls,Img_trafic actuel1,Img_trafic actuel2,nombres de clics trafic actuel,nombres de pages indexé trafic actuel,Img_donnee brute gcs,Img_meilleure page,Img_test_gsc,Img_sitemap_declaré,Img_https,Img_profondeur_clics,Img_que des H1 vides,Img_1ère balise Hn n'est pas H1,Img_Sauts de niveau entre les Hn,Img_Hn trop longue
+"""pour confirmer ce qui est ecrit plus tot 
+## PARTIE 4 — VALIDATION DES CONNEXIONS (7 TESTS OBLIGATOIRES)
+
+Ne pas écrire une seule ligne de feature avant que ces 7 tests soient verts.
+
+### TEST 1 — Airtable
+- Créer un enregistrement test avec le champ "Nom de site" = "TEST"
+- Le lire par son ID
+- Le modifier : changer le statut
+- Le supprimer
+- Vérifier que le rate limit (5 req/sec) est respecté avec un délai de 250ms entre chaque appel
+- ✅ Vert si toutes les opérations réussissent sans erreur 429
+
+### TEST 2 — Cloudinary
+- Uploader une image locale (n'importe laquelle)
+- Récupérer l'URL publique
+- Faire un GET sur cette URL depuis Node.js et vérifier que le statut est 200
+- ✅ Vert si l'URL est accessible publiquement
+
+### TEST 3 — Playwright sur Railway
+- Lancer Chromium headless
+- Naviguer vers `https://example.com`
+- Faire un screenshot
+- Fermer le navigateur
+- Vérifier que le fichier screenshot existe et fait plus de 10KB
+- ✅ Vert si la capture réussit (si ça plante ici c'est la config Docker)
+
+### TEST 4 — GPT-4o Vision
+- Envoyer le screenshot du test 3 à GPT-4o
+- Prompt : "Décris ce que tu vois sur cette image en une phrase"
+- Vérifier que la réponse est cohérente et non vide
+- Tester aussi le format de réponse structuré : demander "Renvoie uniquement CROP: x=0, y=0, width=100, height=100" et vérifier que le parsing fonctionne
+- ✅ Vert si réponse reçue et parsée correctement
+
+### TEST 5 — BullMQ + Redis
+- Créer une queue "test-queue"
+- Ajouter un job `{ message: "hello" }`
+- Créer un worker qui traite ce job et log le message
+- Vérifier que le job passe de "waiting" à "completed"
+- Tester le retry : faire échouer le job 2 fois et vérifier qu'il réessaie
+- ✅ Vert si job traité et retry fonctionnel
+
+### TEST 6 — Google OAuth
+- Cliquer "Se connecter avec Google" → flux complet
+- Recevoir l'access token et le refresh token
+- Faire une requête API Google avec l'access token
+- Simuler l'expiration : forcer un appel de refresh et vérifier qu'on obtient un nouveau token valide
+- ✅ Vert si refresh fonctionne sans interaction utilisateur
+
+### TEST 7 — Google Sheets API
+- Ouvrir un Google Sheet de test (avec accès éditeur)
+- Lire les données d'un onglet
+- Trier les données côté Node.js
+- Filtrer les données
+- ✅ Vert si lecture, tri et filtre fonctionnent
+
+---
+
+## PARTIE 5 — AUTHENTIFICATION PLATEFORME
+
+### ACTION 5.1 — Inscription
+- Route POST /auth/register
+- Validation : email format valide, mot de passe minimum 8 caractères
+- Hashage bcrypt (coût 12)
+- Vérification que l'email n'existe pas déjà → erreur explicite si doublon
+- Création en DB
+- Retour : JWT dans cookie HttpOnly, SameSite=Strict, Secure
+
+### ACTION 5.2 — Connexion
+- Route POST /auth/login
+- Vérification hash bcrypt
+- Si échec : message générique "Email ou mot de passe incorrect" (ne pas préciser lequel)
+- Après 5 tentatives échouées : bloquer 15 minutes (stocker compteur en Redis)
+- Retour : JWT dans cookie HttpOnly
+
+### ACTION 5.3 — Middleware d'authentification
+- Vérifier le JWT sur toutes les routes protégées
+- Si expiré : réponse 401 → frontend redirige vers login
+- Si valide : attacher `req.user` avec l'ID utilisateur
+
+### ACTION 5.4 — Déconnexion
+- Route POST /auth/logout
+- Supprimer le cookie côté client
+- Invalider le token en ajoutant son JTI dans une blacklist Redis (TTL = durée restante du token)
+
+---
+
+## PARTIE 6 — INTERFACE UTILISATEUR
+
+### ACTION 6.1 — Layout principal
+- Sidebar fixe à gauche avec 3 entrées : Nouvel audit / Slides / Progression
+- Header avec nom de l'utilisateur et bouton déconnexion
+- Lien vers page Paramètres (icône engrenage)
+- Design sobre, pas de framework CSS complexe (Tailwind suffit)
+
+### ACTION 6.2 — Page Paramètres (à faire AVANT le formulaire audit)
+C'est ici que l'utilisateur connecte ses services tiers. Sans ça l'audit ne peut pas lancer les modules qui en dépendent.
+
+**Section Google**
+- Bouton "Se connecter avec Google"
+- Scopes demandés : Google Sheets (lecture), Google Search Console (lecture)
+- Statut affiché : "Connecté en tant que email@gmail.com" ou "Non connecté"
+- Bouton "Déconnecter"
+
+**Section Ubersuggest**
+- Statut : Connecté / Non connecté / Session expirée
+- Bouton "Connecter Ubersuggest"
+- Action : ouvre une fenêtre Playwright en mode visible (non-headless) sur la page login d'Ubersuggest
+- L'utilisateur se connecte normalement dans cette fenêtre
+- Playwright détecte la connexion réussie (changement d'URL ou élément post-login)
+- Capture automatique des cookies de session
+- Chiffrement AES-256 et stockage en DB
+- La fenêtre se ferme automatiquement
+- Le statut passe à "Connecté"
+
+**Section My Ranking Metrics**
+- Même procédé exactement qu'Ubersuggest
+
+**Contrainte importante sur les sessions**
+- Avant chaque audit, le worker vérifie la validité de chaque session en chargeant une page protégée
+- Si redirection vers login → statut mis à jour "Session expirée" → notification utilisateur → ce module est ignoré pour cet audit (les autres continuent)
+
+### ACTION 6.3 — Page Nouvel Audit (formulaire)
+
+**Champs**
+- Nom du site (obligatoire)
+- URL du site (obligatoire, validation : doit commencer par http:// ou https://, accessible)
+- Lien Google Sheet audit (obligatoire, doit contenir "docs.google.com/spreadsheets")
+- Lien Google Sheet plan d'action (obligatoire, même validation)
+- Lien rapport My Ranking Metrics (obligatoire)
+
+**Validation côté client**
+- En temps réel sur chaque champ au blur
+- Message d'erreur sous chaque champ invalide
+- Bouton soumettre désactivé tant que tout n'est pas valide
+
+**Validation côté serveur**
+- Mêmes règles + vérification que l'utilisateur n'a pas déjà un audit en cours (max 1 simultané)
+- Si tout valide :-
+  1. Créer l'enregistrement Airtable → récupérer l'ID Airtable → statut "A faire"
+  2. Créer l'audit en DB avec l'ID Airtable
+  3. Créer tous les audit_steps en DB avec statut "EN_ATTENTE"
+  4. Ajouter le job dans BullMQ
+  5. Mettre à jour Airtable statut → "En cours"
+  6. Répondre 201 avec l'ID de l'audit
+  7. Frontend redirige vers la page Progression de cet audit
+
+### ACTION 6.4 — Page Progression
+
+**Structure visuelle**
+- Nom du site + URL en haut
+- Barre de progression globale : `(SUCCES + SKIP) / total_steps * 100`
+- Durée écoulée depuis le lancement
+- Liste de toutes les étapes groupées par module
+
+**Pour chaque étape**
+- Icône de statut : ⏳ EN_ATTENTE / 🔄 EN_COURS / 🤖 IA_EN_COURS / ✅ SUCCES / ⏭ SKIP / ❌ ERREUR / 🚨 INTERVENTION
+- Nom lisible de l'étape
+- Temps écoulé pour cette étape (si terminée)
+- Preview miniature de l'image (si SUCCES)
+- Message d'erreur (si ERREUR)
+- Bouton "Relancer ce step" (si ERREUR)
+- Bouton "Ouvrir session" (si INTERVENTION requise pour Ubersuggest/MRM/Ahrefs)
+
+**Temps réel**
+- WebSocket connecté dès l'ouverture de la page
+- Chaque événement du worker est poussé : changement de statut, logs, images disponibles
+- Si WebSocket déconnecté : fallback polling toutes les 5 secondes
+
+### ACTION 6.5 — Page Slides
+- Liste des audits terminés
+- Cliquer sur un audit → affiche toutes les images dans l'ordre logique de la Step Registry
+- Chaque image est cliquable pour agrandir
+- (Phase 2 optionnelle) : bouton "Générer PowerPoint" ou "Générer Google Slides"
+
+---
+
+## PARTIE 7 — MOTEUR DE JOBS (CŒUR DU PROJET)
+
+### ACTION 7.1 — Configuration BullMQ
+
+**Queue "audit-jobs"**
+- Concurrence : 2 jobs simultanés maximum (limité par la RAM Railway)
+- Retry automatique : 0 (les retries sont gérés au niveau des steps, pas des jobs)
+- Timeout job global : 90 minutes
+
+**Queue "step-retry"**
+- Pour les relances individuelles d'un step depuis l'UI
+- Priorité haute
+
+### ACTION 7.2 — Structure du Worker principal
+
+Le worker reçoit `{ auditId, userId }` et exécute les steps dans l'ordre défini.
+
+Pour chaque step :
+```
+1. Vérifier les préconditions (token valide, session valide, sheet accessible)
+   → Si précondition échoue : SKIP avec message explicatif → step suivant
+
+2. Mettre à jour DB : statut = EN_COURS + started_at
+3. Émettre WebSocket : { stepKey, statut: "EN_COURS" }
+
+4. Exécuter l'action Playwright/API (avec timeout strict)
+   → Succès partiel ou total → aller en 5
+   → Exception → aller en 8 (boucle IA de décision)
+
+5. Si capture : mettre DB statut = IA_EN_COURS
+   Émettre WebSocket : { stepKey, statut: "IA_EN_COURS" }
+
+6. Envoyer capture brute à GPT-4o (rognage + extraction)
+   → Réponse valide → aller en 7
+   → Réponse invalide → re-prompt (max 3 fois) → si toujours invalide → aller en 8
+
+7. Appliquer crop avec Sharp
+   Upload Cloudinary → récupérer URL
+   Si DRY_RUN=false : écrire dans Airtable (URL + valeurs texte)
+   Mettre DB : statut = SUCCES + output_cloudinary_url + ended_at
+   Émettre WebSocket : { stepKey, statut: "SUCCES", imageUrl }
+   → Step suivant
+
+8. BOUCLE IA DE DÉCISION (max 3 tentatives par step)
+   Prendre screenshot état actuel de la page
+   Envoyer à GPT-4o : screenshot + logs d'erreur + description du step + historique tentatives
+   GPT-4o répond avec une action parmi la liste autorisée :
+   
+   CLOSE_POPUP → fermer popup visible
+   SCROLL_TO_TEXT:"texte" → scroller jusqu'au texte
+   CLICK_ELEMENT:"selector" → cliquer sur un élément
+   WAIT_SECONDS:N → attendre N secondes
+   RETRY → réessayer l'action depuis le début
+   SKIP:"raison" → ignorer ce step avec message
+   REQUEST_HUMAN → passer en statut INTERVENTION
+   
+   Exécuter l'action décidée → retourner en 4 (tentative suivante)
+   
+   Après 3 tentatives échouées :
+   → Mettre DB : statut = ERREUR + error_message
+   → Émettre WebSocket : { stepKey, statut: "ERREUR", message }
+   → Continuer avec le step suivant (l'échec d'un step n'arrête pas l'audit)
+```
+
+### ACTION 7.3 — Fin d'audit
+- Tous les steps terminés (SUCCES + SKIP + ERREUR)
+- Calculer le statut global :
+  - 0 erreurs → "Terminé"
+  - Au moins 1 erreur → "Terminé avec erreurs"
+- Mettre à jour DB + Airtable statut
+- Émettre WebSocket : audit terminé
+- (optionnel) Envoyer notification email
+
+---
+
+## PARTIE 8 — MODULE IA
+
+### ACTION 8.1 — Service de rognage (crop.js)
+
+**Entrée** : chemin image + prompt de rognage spécifique au step
+
+**Prompt générique de base**
+```
+Tu es un assistant de rognage d'image précis.
+Analyse cette image et renvoie uniquement les coordonnées de rognage.
+Format de réponse obligatoire (rien d'autre) :
+CROP: x=[nombre], y=[nombre], width=[nombre], height=[nombre]
+
+[prompt spécifique au step]
+```
+
+**Parsing de la réponse**
+- Regex sur `CROP: x=(\d+), y=(\d+), width=(\d+), height=(\d+)`
+- Si parsing échoue → log + re-prompt avec instruction encore plus stricte
+- Max 3 tentatives
+
+**Application du crop**
+- Sharp : `image.extract({ left: x, top: y, width: w, height: h })`
+- Sauvegarder en écrasant le fichier temporaire
+- Vérifier que le fichier résultant fait plus de 5KB (sinon le crop est invalide)
+
+### ACTION 8.2 — Service d'extraction (extract.js)
+
+Pour les valeurs textuelles extraites des images (scores PSI).
+
+**Entrée** : chemin image + ce qu'on cherche
+
+**Prompt PSI**
+```
+Analyse cette image de PageSpeed Insights.
+Trouve le grand cercle/donut qui affiche le score de performance.
+Renvoie uniquement : SCORE: [nombre entre 0 et 100]
+Ne renvoie rien d'autre.
+```
+
+**Parsing** : regex `SCORE: (\d+)`
+
+### ACTION 8.3 — Service de décision (decide.js)
+
+**Entrée** : screenshot état actuel + contexte
+
+**Liste d'actions autorisées envoyée dans le prompt**
+```
+Tu dois aider un robot à surmonter un obstacle sur une page web.
+Actions disponibles (renvoie EXACTEMENT l'une d'elles) :
+- CLOSE_POPUP → il y a une popup/bannière à fermer
+- SCROLL_TO_TEXT:[texte exact] → il faut scroller jusqu'à ce texte
+- CLICK_ELEMENT:[selector CSS] → il faut cliquer sur cet élément
+- WAIT_SECONDS:[nombre] → il faut attendre ces secondes
+- RETRY → réessayer depuis le début
+- SKIP:[raison courte] → impossible à récupérer
+- REQUEST_HUMAN → nécessite une intervention humaine
+
+Contexte : [description du step]
+Tentatives précédentes : [historique]
+Erreur actuelle : [message d'erreur]
+
+Renvoie uniquement l'action choisie, rien d'autre.
+```
+
+---
+
+## PARTIE 9 — CAPTURES EN DÉTAIL (ACTION PAR ACTION)
+
+### CAPTURE 1 — Robots.txt
+
+**Préconditions** : URL du site disponible
+
+**Actions**
+1. Construire les URLs candidates : `https://domaine/robots.txt` et `https://www.domaine/robots.txt`
+2. Télécharger via `requests` Node.js (axios) avec timeout 40s, pas Playwright
+3. Si réponse 404 ou vide sur toutes les candidates → écrire "robots.txt absent" dans Airtable → SKIP
+4. Parser le texte ligne par ligne avec regex `^\s*sitemaps?\s*:\s*(\S+)/i`
+5. Extraire l'URL du sitemap trouvée (noter pour l'étape suivante)
+6. Construire un HTML local : fond blanc, police monospace, lignes du robots.txt, ligne sitemap en surligné jaune avec id="target", ±6 lignes de contexte
+7. Playwright charge ce HTML (`page.setContent`)
+8. Screenshot complet du HTML rendu (pas de clip fixe)
+9. **Envoyer à GPT-4o** avec prompt :
+```
+Cette image montre du contenu d'un fichier robots.txt.
+La ligne importante est surlignée en jaune.
+Rogne pour montrer : 3-4 lignes avant la ligne jaune, la ligne jaune, 3-4 lignes après.
+Supprime les marges blanches excessives au-dessus et en-dessous.
+CROP: x=0, y=[top], width=[largeur totale], height=[hauteur]
+```
+10. Sharp applique le crop
+11. Upload Cloudinary → URL
+12. Écrire Airtable : `Img_Robots_Txt` = URL, `robot` = URL du robots.txt
+
+**Contraintes**
+- Si plusieurs sitemaps dans robots.txt : noter toutes les URLs, prendre la première pour l'étape Sitemap
+- Si robots.txt existe mais ne contient pas "Sitemap:" : continuer mais noter que l'étape Sitemap sera SKIP avec message
+
+---
+
+### CAPTURE 2 — Sitemap
+
+**Préconditions** : URL du sitemap extraite de l'étape Robots.txt
+
+**Si pas d'URL sitemap** : écrire "Le fichier sitemap(s) n'existe pas" dans champ `sitemaps` → SKIP
+
+**Actions si URL disponible**
+1. Vérifier si l'URL se termine par `.gz` → décompresser en mémoire avec `zlib` Node.js → convertir en texte XML → tronquer aux 180 premières lignes
+2. Playwright charge l'URL du sitemap
+3. Attendre `domcontentloaded` + 2 secondes
+4. Détecter le type de sitemap :
+   - Présence de `<h1>` + `<table>` → Yoast stylé
+   - Présence de `<pre>` → XML brut
+   - Autre → page custom
+5. Screenshot full_page=true dans tous les cas
+6. **Envoyer à GPT-4o** avec prompt :
+```
+Cette image est un sitemap XML ou un index de sitemaps.
+Rogne pour ne garder que le contenu utile (URLs ou liens).
+Supprime les marges, headers, espaces blancs.
+Si le contenu est très long, garde les 20 premières entrées.
+L'image résultante doit être lisible dans une slide PowerPoint.
+CROP: x=[left], y=[top], width=[largeur], height=[hauteur]
+```
+7. Sharp crop → Upload Cloudinary → URL
+8. Écrire Airtable : `Img_Sitemap` = URL, `sitemaps` = URL du sitemap
+
+---
+
+### CAPTURE 3 — Logo
+
+**Préconditions** : URL du site
+
+**Actions en cascade (s'arrêter au premier succès)**
+1. Charger la page d'accueil avec axios (pas Playwright), parser le HTML
+2. Chercher `<link rel="icon">` ou `<link rel="shortcut icon">` ou `<link rel="apple-touch-icon">` → extraire href → convertir en URL absolue
+3. Si non trouvé : chercher `<img>` avec "logo" dans src ou alt (insensible à la casse)
+4. Si non trouvé : chercher `<a href="/">` contenant une `<img>` ou `<header> img:first-child`
+5. Si non trouvé : chercher `<meta property="og:image">` → extraire content
+6. Si URL trouvée en 1-5 : télécharger l'asset directement avec axios → buffer en mémoire → upload Cloudinary directement (pas de screenshot)
+7. Si rien trouvé : Playwright charge la page → screenshot des 300px supérieurs de la page → **envoyer à GPT-4o** :
+```
+Cette image montre le haut d'un site web.
+Identifie et extrait uniquement la zone du logo.
+CROP: x=[left], y=[top], width=[largeur], height=[hauteur]
+```
+8. Écrire Airtable : `Img_Logo` = URL
+
+**Contraintes**
+- Si le logo est un SVG inline : le convertir en PNG avec Sharp avant upload
+- Toujours vérifier que l'image téléchargée fait plus de 100 octets (éviter les icônes 1x1 de tracking)
+
+---
+
+### CAPTURE 4 — PageSpeed Mobile
+
+**Préconditions** : URL du site, clé API Google non requise (on fait tout en Playwright)
+
+**Actions**
+1. Playwright naviguer vers `https://pagespeed.web.dev/`
+2. Résolution : 1440x900, DPR 2
+3. Attendre que le champ de saisie soit visible
+4. Saisir l'URL du site dans le champ
+5. Cliquer le bouton "Analyser"
+6. Attendre que `.lh-category` soit visible (timeout 3 minutes, PSI est lent)
+7. L'onglet Mobile s'affiche par défaut → ne pas changer d'onglet
+8. Scroller `.lh-category` dans le viewport
+9. Attendre 2 secondes (rendu des graphes)
+10. Screenshot de l'élément `.lh-category` uniquement (screenshot d'élément, pas full page)
+11. **Envoyer à GPT-4o** avec prompt combiné rognage + extraction :
+```
+Cette image est une capture PageSpeed Insights (onglet Mobile).
+TÂCHE 1 - EXTRACTION : Trouve le grand cercle/donut affichant le score de performance.
+Renvoie : SCORE: [nombre]
+
+TÂCHE 2 - ROGNAGE : Trouve la section qui commence au titre "Analysez les problèmes de performances" et se termine juste avant le titre "Statistiques". Si "Statistiques" n'est pas visible, rogne jusqu'à 65% de la hauteur.
+Renvoie : CROP: x=0, y=[top], width=[largeur], height=[hauteur]
+```
+12. Parser SCORE et CROP séparément
+13. Sharp applique le crop
+14. Upload Cloudinary → URL
+15. Écrire Airtable : `Img_PSI_Mobile` = URL, `pourcentage smartphone` = score extrait
+16. Garder la page Playwright ouverte pour l'étape Desktop (économie de temps)
+
+**Contraintes**
+- Si PSI affiche une erreur (site inaccessible, timeout) → screenshot de l'erreur → SKIP avec message
+- Si `.lh-category` n'apparaît pas après 3 minutes → IA de décision → si toujours rien → SKIP
+
+---
+
+### CAPTURE 5 — PageSpeed Desktop
+
+**Actions** (suite immédiate de la capture Mobile, même page)
+1. Chercher l'onglet "Bureau" ou "Desktop" dans la navigation PSI
+2. Cliquer l'onglet
+3. Attendre rechargement de `.lh-category` (timeout 2 minutes)
+4. Attendre 2 secondes
+5. Screenshot de `.lh-category`
+6. **Envoyer à GPT-4o** avec même prompt mais "onglet Bureau/Desktop"
+7. Sharp crop → Upload → Airtable : `Img_PSI_Desktop` = URL, `pourcentage desktop` = score
+
+---
+
+### CAPTURE 6 — AmIResponsive
+
+**Cette capture est parfaite dans ton code. La reproduire telle quelle en Node.js.**
+
+**Actions**
+1. Construire URL : `https://amiresponsive.co.uk/?site=URL_encodée`
+2. Playwright naviguer vers cette URL
+3. Attendre que `.devices` soit visible (timeout 90s)
+4. Attendre 6 secondes supplémentaires (animation + chargement iframes)
+5. Vérifier iframes bloquées : injecter JS qui vérifie l'accessibilité du contentDocument de chaque iframe
+6. Si iframes bloquées : injecter JS qui ajoute un `<div>` rouge en position fixed avec le texte "SITE BLOCKS IFRAMES / CSP"
+7. Screenshot de l'élément `.devices` uniquement
+8. Aucun rognage IA nécessaire (le screenshot d'élément est déjà propre)
+9. Upload Cloudinary → URL
+10. Écrire Airtable : `Img_AmIResponsive` = URL
+
+---
+
+### CAPTURE 7 — SSL Labs
+
+**Actions**
+1. Extraire le domaine de l'URL du site (sans https://, sans chemin)
+2. Playwright naviguer vers `https://www.ssllabs.com/ssltest/analyze.html?d=DOMAINE&hideResults=on`
+3. Attendre que la page charge (domcontentloaded)
+4. Attendre que soit le tableau de résultats soit la liste d'IPs apparaisse (timeout 6 minutes)
+5. Vérifier si plusieurs IPs affichées : chercher des liens contenant une regex IP `\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`
+6. Si oui : cliquer le premier lien IP → attendre rechargement (domcontentloaded)
+7. Attendre que le titre "Summary" soit visible (timeout 4 minutes supplémentaires)
+8. Attendre 2 secondes de plus
+9. Cibler l'ancêtre div[3] ou div[4] du titre "Summary" pour avoir un bloc plus large
+10. Screenshot de ce bloc
+11. **Envoyer à GPT-4o** :
+```
+Cette image contient un rapport SSL Labs.
+Rogne pour ne garder que le bloc "Summary" contenant :
+- La note (A+, A, B, C, F...)
+- Le graphe de couleurs barré
+- Les informations du serveur analysé
+Supprime tout ce qui est au-dessus et en-dessous.
+CROP: x=[left], y=[top], width=[largeur], height=[hauteur]
+```
+12. Sharp crop → Upload → Airtable : `Img_SSL` = URL
+
+**Contraintes**
+- Timeout total : 15 minutes (SSL Labs peut être très lent)
+- Si "Assessment failed" apparaît → screenshot + SKIP avec message "SSL Labs : analyse échouée pour ce domaine"
+- Si la page charge une erreur réseau → SKIP
+
+---
+
+### CAPTURES 8 à 20 — Google Sheets (Audit)
+
+**Préconditions communes**
+- Token Google OAuth valide (refresh si expiré)
+- Vérifier accès éditeur au sheet : tenter de lire la liste des onglets via API Sheets → si erreur 403 → SKIP toutes les étapes Sheets avec message "Accès refusé au Google Sheet"
+- Vérifier que chaque onglet attendu existe → si absent → SKIP cet onglet spécifique
+
+**Architecture commune pour chaque onglet**
+1. API Google Sheets : lire les données de l'onglet pour vérifier qu'il y a des données correspondant au filtre
+2. Si aucune donnée → SKIP avec message "Aucune donnée à capturer pour cet onglet"
+3. Playwright : ouvrir le sheet → naviguer vers l'onglet → appliquer tri/filtre dans l'interface
+4. Injecter CSS pour cacher les menus Google Sheets
+5. Screenshot viewport (pas full page)
+6. **Envoyer à GPT-4o** avec prompt spécifique
+7. Sharp crop → Upload → Airtable
+
+**Prompt GPT-4o commun pour les sheets**
+```
+Cette image est une capture d'un Google Sheet.
+Rogne précisément pour ne garder que le tableau de données.
+Supprime : barre de menus Google Sheets en haut, barre d'onglets en bas, marges, espaces vides.
+Ne coupe aucune ligne de données.
+CROP: x=[left], y=[top], width=[largeur], height=[hauteur]
+```
+
+---
+
+**ONGLET : "Images" → Img_Poids_image**
+- API Sheets : vérifier que la colonne "Taille(octets)" a des valeurs ≥ 100000
+- Playwright : trier colonne "Taille(octets)" décroissant dans l'interface
+- Masquer toutes les colonnes sauf "Destination" et "Taille(octets)" via JS injecté
+- Screenshot
+- GPT-4o valide que les lignes visibles sont toutes ≥ 100Ko
+- Sharp crop → Airtable
+
+**ONGLET : "Même title" → Img_meme_title**
+- API : vérifier données présentes
+- Playwright : ouvrir onglet → CSS pour masquer UI Sheets
+- Screenshot
+- GPT-4o rogne au millimètre → Airtable
+
+**ONGLET : "Même balise meta desc" → Img_meta_description_double**
+- Même procédé → Airtable
+
+**ONGLET : "Doublons H1" → Img_balise_h1_double**
+- Même procédé → Airtable
+
+**ONGLET : "Balises H1-H6" — Le plus complexe (7 captures potentielles)**
+
+Pour chaque colonne ci-dessous, vérifier via API si elle contient au moins un "oui". Si que des "non" → SKIP cette colonne.
+
+- Colonne "H1 absente" = "oui" → filtrer → garder colonnes URL + H1 absente → capture → GPT-4o → `Img_balise_h1_absente`
+- Colonne "que des H1 vides" → si oui présent : trier croissant (oui en haut) → capture → GPT-4o valide tri → `Img_que des H1 vides`
+- Colonne "au moins une H1 vide" → même logique → `Img_au moins une H1 vide`
+- Colonne "1ère balise Hn n'est pas H1" → même logique → `Img_1ère balise Hn n'est pas H1`
+- Colonne "Sauts de niveau entre les Hn" → trier décroissant → garder les non-zéro → GPT-4o valide → `Img_Sauts de niveau entre les Hn`
+- Colonne "Hn trop longue" → trier décroissant → garder valeur = 1 → capture → `Img_Hn trop longue`
+
+Pour chacune : GPT-4o avec prompt supplémentaire :
+```
+Vérifie que dans la capture visible, aucune ligne avec la valeur "non" n'apparaît dans la colonne triée.
+Si des "non" sont visibles en bas, rogne pour les exclure.
+```
+
+**ONGLET : "Nb de mots body" → Img_longeur_page**
+- Trier "Gravité du problème de taille du contenu" décroissant
+- Capturer uniquement les 10 premières lignes de données
+- GPT-4o rogne → Airtable
+
+**ONGLET : "Meta desc" → Img_meta_description**
+- API : vérifier qu'il y a des lignes avec "Nb de caractères dans la balise meta description" = 0
+- Si aucune → SKIP
+- Trier colonne croissant → les 0 remontent en haut
+- Screenshot
+- GPT-4o avec prompt : "Ne garde que les lignes où la colonne nb de caractères = 0. Rogne tout ce qui est en-dessous."
+- Airtable
+
+**ONGLET : "Balise title" → Img_balises_title**
+- API : vérifier qu'il y a des lignes "État balise title" = "trop longue"
+- Si aucune → SKIP
+- Filtrer "trop longue"
+- Screenshot → GPT-4o → Airtable
+
+---
+
+### CAPTURES 21 à 24 — Google Sheets Plan d'action
+
+**Préconditions** : même que sheet audit mais pour le second sheet
+
+**ONGLET : "Synthèse Audit - Plan d'action" → Img_planD'action**
+- Ouvrir le sheet plan d'action
+- Naviguer vers cet onglet exact
+- Masquer UI Sheets via CSS
+- Screenshot
+- GPT-4o : "Rogne pour ne garder que le tableau. Supprime tous les menus et marges Sheets."
+- Airtable
+
+**ONGLET : "Requêtes Clés / Calédito" → Img_Requetes_cles**
+- Même procédé → Airtable
+
+**ONGLET : "Données Images" → Img_donnee_image**
+- Même procédé → Airtable
+
+**ONGLET : "Longueur de page" → Img_longeur_page_plan**
+- Même procédé → Airtable
+
+---
+
+### CAPTURES 25 et 26 — Google Search Console
+
+**Préconditions**
+- Token Google OAuth valide
+- Vérifier via API GSC que le compte est propriétaire du site → si non → SKIP les 2 captures avec message "Compte non propriétaire dans GSC"
+
+**Actions communes**
+1. Créer contexte Playwright avec les cookies Google injectés
+2. Naviguer vers GSC du site audité
+3. Vérifier que la connexion est active (nom du site visible dans l'interface)
+
+**ONGLET : "Sitemaps" → Img_sitemap_declaré**
+1. Naviguer vers l'onglet Sitemaps dans GSC
+2. Attendre le chargement du tableau des sitemaps
+3. Screenshot de la page
+4. **GPT-4o** :
+```
+Cette image est une capture de Google Search Console, onglet Sitemaps.
+Rogne pour ne garder que le tableau listant les sitemaps déclarés.
+Supprime le menu de navigation GSC, le header, et tout ce qui n'est pas le tableau.
+CROP: x=[left], y=[top], width=[largeur], height=[hauteur]
+```
+5. Sharp crop → Upload → Airtable
+
+**ONGLET : "HTTPS" → Img_https**
+1. Naviguer vers l'onglet HTTPS dans GSC (Paramètres → HTTPS ou via URL directe)
+2. Attendre le chargement du graphe
+3. Screenshot de la page
+4. **GPT-4o** :
+```
+Cette image montre un rapport HTTPS de Google Search Console.
+Il y a un graphe avec des couleurs, notamment une zone verte.
+Rogne pour ne garder que la partie du graphe colorée en vert et son contexte immédiat.
+CROP: x=[left], y=[top], width=[largeur], height=[hauteur]
+```
+5. Sharp crop → Upload → Airtable
+
+---
+
+### CAPTURE 27 — My Ranking Metrics → Img_profondeur_clics
+
+**Préconditions**
+- Session MRM valide (sinon SKIP avec notification)
+
+**Actions**
+1. Charger les cookies MRM chiffrés depuis DB → déchiffrer AES-256
+2. Créer contexte Playwright avec ces cookies injectés
+3. Naviguer vers l'URL du rapport (depuis champ Airtable)
+4. Vérifier que la connexion est active (si redirection vers login → SKIP + notification session expirée)
+5. Chercher le texte exact "Profondeur des pages et maillage interne" sur la page (locator texte)
+6. Si non trouvé → IA de décision → si toujours non trouvé → SKIP
+7. Scroller jusqu'à ce texte
+8. Continuer à scroller jusqu'à voir un `<table>` en-dessous de ce titre
+9. Screenshot du tableau
+10. **GPT-4o** :
+```
+Cette image montre un tableau de données My Ranking Metrics sur la profondeur des pages.
+Rogne pour ne garder que le tableau, sans aucun menu ni chrome de l'application.
+CROP: x=[left], y=[top], width=[largeur], height=[hauteur]
+```
+11. Sharp crop → Upload → Airtable
+
+---
+
+### CAPTURE 28 — Ubersuggest → Img_autorité_domaine_UBERSUGGEST
+
+**Préconditions**
+- Session Ubersuggest valide (sinon SKIP)
+
+**Actions**
+1. Charger cookies Ubersuggest → déchiffrer → injecter dans Playwright
+2. Naviguer vers Ubersuggest
+3. Vérifier connexion active
+4. Aller dans "Analyse du trafic"
+5. Entrer l'URL du site dans la barre de recherche
+6. Attendre chargement des résultats (timeout 30s)
+7. Screenshot de la page
+8. **GPT-4o** :
+```
+Cette image est une capture d'Ubersuggest.
+Identifie et rogne pour ne garder que la carte intitulée "DOMAIN AUTHORITY".
+CROP: x=[left], y=[top], width=[largeur], height=[hauteur]
+```
+9. Sharp crop → Upload → Airtable
+
+---
+
+### CAPTURE 29 — Semrush → Img_autorité_domaine_SEMRUSH
+
+**Risque anti-bot : élevé. Max 3 tentatives.**
+
+**Actions**
+1. Playwright naviguer vers `https://fr.semrush.com/free-tools/website-authority-checker/`
+2. Attendre 5 secondes
+3. Fermer les popups dans l'ordre :
+   - Cookie banner OneTrust : cliquer `#onetrust-accept-btn-handler`
+   - Popup promotionnel : chercher bouton avec aria-label="Close" ou bouton carré avec SVG
+   - Touche Escape
+   - JS : masquer tous les éléments avec class contenant "popup", "modal", "overlay"
+4. Saisir le domaine dans le champ input
+5. Cliquer "Vérifier l'autorité" ou appuyer Entrée
+6. Attendre networkidle (timeout 30s)
+7. Attendre 8 secondes supplémentaires
+8. Re-fermer les popups apparus post-soumission
+9. Screenshot
+10. **GPT-4o** :
+```
+Cette image est une capture de Semrush Authority Checker.
+Identifie et rogne pour garder uniquement :
+- La grande carte "Authority Score" centrale
+- Les deux petites cartes au-dessus nommées "Authority Score" et "Backlinks"
+CROP: x=[left], y=[top], width=[largeur], height=[hauteur]
+```
+11. Sharp crop → Upload → Airtable
+12. Si échec après 3 tentatives → ERREUR + notification "Intervention manuelle requise pour Semrush"
+
+---
+
+### CAPTURE 30 — Ahrefs → Img_autorité_domaine_AHREF
+
+**Risque anti-bot : très élevé (Cloudflare Turnstile). Max 3 tentatives.**
+
+**Actions**
+1. Lancer Playwright avec `channel: "chrome"` (vrai Chrome, pas Chromium) en mode non-headless avec fenêtre hors écran (`--window-position=-2400,-2400`)
+2. Naviguer vers `https://ahrefs.com/fr/website-authority-checker/`
+3. Attendre 5 secondes
+4. Fermer les banières cookies (bouton "Tout rejeter" ou équivalent)
+5. Masquer overlays via JS
+6. Saisir le domaine
+7. Détecter Cloudflare Turnstile :
+   - Chercher iframe avec "turnstile" ou "challenges.cloudflare.com" dans l'URL
+   - Si trouvé : cliquer la checkbox dans l'iframe
+   - Chercher texte "humain" ou "Cloudflare" dans la page → cliquer si visible
+8. Attendre 5 secondes
+9. Cliquer le bouton de soumission
+10. Attendre 15 secondes
+11. Vérifier si Cloudflare réapparaît → si oui : re-cliquer (stratégie shotgun : clic centre + offsets)
+12. Attendre encore 10 secondes
+13. Screenshot
+14. **GPT-4o** :
+```
+Cette image est une capture d'Ahrefs Website Authority Checker.
+Identifie et rogne pour garder uniquement :
+- La carte "Domain Rating"
+- La carte "URL Rating"
+CROP: x=[left], y=[top], width=[largeur], height=[hauteur]
+```
+15. Sharp crop → Upload → Airtable
+16. Si échec après 3 tentatives → ERREUR + notification
+
+---
+
+## PARTIE 10 — GESTION GLOBALE DES ERREURS
+
+### ACTION 10.1 — Site inaccessible
+- Avant de lancer le worker : faire un GET axios sur l'URL du site (timeout 15s)
+- Si timeout ou erreur réseau → annuler l'audit immédiatement → notifier l'utilisateur
+- Si redirection vers page de maintenance → continuer mais noter dans les events
+
+### ACTION 10.2 — Nettoyage systématique
+- Après chaque upload Cloudinary : supprimer le fichier temporaire du disque Railway
+- Si le step échoue avant l'upload : supprimer quand même le fichier temporaire
+- Fermer proprement chaque contexte Playwright après chaque step (pas une instance globale)
+- Le browser pool gère le recyclage des instances
+
+### ACTION 10.3 — Monitoring des coûts IA
+- Logger chaque appel GPT-4o avec : step_key, tokens_input, tokens_output, coût estimé
+- Si le coût d'un audit dépasse un seuil configurable → log d'alerte (ne pas bloquer l'audit)
+
+### ACTION 10.4 — Mode dry-run
+- Variable `DRY_RUN=true` → toutes les étapes s'exécutent normalement sauf :
+  - Pas d'écriture dans Airtable
+  - Les images sont quand même uploadées sur Cloudinary dans un dossier "debug"
+  - Tous les logs sont conservés
+- Utile pendant le développement pour tester sans polluer Airtable
+
+---
+
+## PARTIE 11 — STEP REGISTRY (CONTRAT FINAL)
+
+| step_key | Champ Airtable | Type sortie | Précondition | Fallback |
+|---|---|---|---|---|
+| robots_txt | Img_Robots_Txt + robot | URL + texte | Aucune | "robots.txt absent" |
+| sitemap | Img_Sitemap + sitemaps | URL + texte | URL depuis robots | Message "n'existe pas" |
+| logo | Img_Logo | URL | Aucune | IA sur screenshot header |
+| psi_mobile | Img_PSI_Mobile + pourcentage smartphone | URL + nombre | Aucune | SKIP si PSI timeout |
+| psi_desktop | Img_PSI_Desktop + pourcentage desktop | URL + nombre | PSI mobile ouvert | SKIP |
+| ami_responsive | Img_AmIResponsive | URL | Aucune | Bandeau rouge si bloqué |
+| ssl_labs | Img_SSL | URL | Aucune | SKIP si analyse échoue |
+| sheet_images | Img_Poids_image | URL | OAuth Google | SKIP si aucune donnée |
+| sheet_meme_title | Img_meme_title | URL | OAuth Google | SKIP si vide |
+| sheet_meta_desc_double | Img_meta_description_double | URL | OAuth Google | SKIP si vide |
+| sheet_doublons_h1 | Img_balise_h1_double | URL | OAuth Google | SKIP si vide |
+| sheet_h1_absente | Img_balise_h1_absente | URL | OAuth Google | SKIP si que des non |
+| sheet_h1_vides | Img_que des H1 vides | URL | OAuth Google | SKIP si que des non |
+| sheet_h1_au_moins | Img_au moins une H1 vide | URL | OAuth Google | SKIP si que des non |
+| sheet_hn_pas_h1 | Img_1ère balise Hn n'est pas H1 | URL | OAuth Google | SKIP si que des non |
+| sheet_sauts_hn | Img_Sauts de niveau entre les Hn | URL | OAuth Google | SKIP si tout zéro |
+| sheet_hn_longue | Img_Hn trop longue | URL | OAuth Google | SKIP si aucun |
+| sheet_mots_body | Img_longeur_page | URL | OAuth Google | SKIP si vide |
+| sheet_meta_desc | Img_meta_description | URL | OAuth Google | SKIP si aucun zéro |
+| sheet_balise_title | Img_balises_title | URL | OAuth Google | SKIP si aucun |
+| plan_synthese | Img_planD'action | URL | OAuth Google | SKIP si inaccessible |
+| plan_requetes | Img_Requetes_cles | URL | OAuth Google | SKIP si vide |
+| plan_donnees_img | Img_donnee_image | URL | OAuth Google | SKIP si vide |
+| plan_longueur | Img_longeur_page_plan | URL | OAuth Google | SKIP si vide |
+| gsc_sitemaps | Img_sitemap_declaré | URL | OAuth + propriétaire | SKIP si non propriétaire |
+| gsc_https | Img_https | URL | OAuth + propriétaire | SKIP |
+| mrm_profondeur | Img_profondeur_clics | URL | Session MRM | SKIP + notif expiration |
+| ubersuggest_da | Img_autorité_domaine_UBERSUGGEST | URL | Session Ubersuggest | SKIP + notif expiration |
+| semrush_authority | Img_autorité_domaine_SEMRUSH | URL | Aucune | ERREUR après 3 échecs |
+| ahrefs_authority | Img_autorité_domaine_AHREF | URL | Aucune | ERREUR après 3 échecs |
+
+**Total : 30 steps. Chaque step est indépendant.**
+
+---
+
+## PARTIE 12 — CHECKLIST DE DÉMARRAGE DANS L'ORDRE
+
+1. Trancher `Img_longeur_page` → deux champs distincts ✅ (fait dans ce plan)
+2. Créer la base Airtable avec les 39 champs listés
+3. Créer le projet Railway + Docker Playwright + Redis + PostgreSQL
+4. Configurer toutes les variables d'environnement
+5. Créer le schéma PostgreSQL (4 tables)
+6. Valider les 7 tests de connexion (ne pas passer avant que les 7 soient verts)
+7. Construire auth (register/login/logout/middleware)
+8. Construire la page Paramètres avec les connexions Google + Ubersuggest + MRM
+9. Construire le formulaire Nouvel Audit + création Airtable + DB
+10. Construire BullMQ worker vide + WebSocket progression
+11. Construire la page Progression avec WebSocket
+12. Implémenter les services IA (crop.js, decide.js, extract.js)
+13. Implémenter Sharp (utils/sharp.js)
+14. Implémenter les steps dans l'ordre : robots → sitemap → logo → ami → ssl → psi → sheets → gsc → mrm → ubersuggest → semrush → ahrefs
+15. Tester chaque step individuellement en dry-run
+16. Tester un audit complet sur 3 sites différents
+17. Valider les résultats dans Airtable
+18. Mise en production Railway  
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

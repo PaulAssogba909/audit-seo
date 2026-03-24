@@ -1,0 +1,488 @@
+import { google } from "googleapis";
+import { chromium } from "playwright";
+import fs from "fs";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
+import sharp from "sharp";
+
+import { uploadToCloudinary } from "../utils/cloudinary.js";
+
+/**
+ * =========================
+ * CONFIG CAPTURES (2 SHEETS)
+ * - target: "audit" | "plan"
+ * - mode: 
+ *    - "transform": API lit + filtre/tri/colonnes => rendu HTML
+ *    - "raw": API lit brut => rendu HTML (avec trimming colonnes vides)
+ * - skipIfEmpty: si true et aucun match => SKIP (pas de capture)
+ * =========================
+ */
+const CAPTURE_CONFIGS = [
+    // ===== SHEET AUDIT =====
+    {
+        airtableField: "Img_Poids_image",
+        target: "audit",
+        mode: "transform",
+        tabName: "Images",
+        keep: [
+            { label: "Destination", matchAny: ["destination"] },
+            { label: "Taille (octets)", matchAny: ["taille", "octet", "bytes"] },
+        ],
+        where: { colMatchAny: ["taille", "octet", "bytes"], op: "bytes_gte", value: 100000 },
+        sort: { colMatchAny: ["taille", "octet", "bytes"], type: "bytes", order: "desc" },
+        limitRows: 15,
+        skipIfEmpty: true,
+    },
+
+    { airtableField: "Img_meme_title", target: "audit", mode: "raw", tabName: "Même title" },
+    { airtableField: "Img_meta_description_double", target: "audit", mode: "raw", tabName: "Même balise meta desc" },
+    { airtableField: "Img_balise_h1_double", target: "audit", mode: "raw", tabName: "Doublons H1" },
+
+    {
+        airtableField: "Img_balise_h1_absente",
+        target: "audit",
+        mode: "transform",
+        tabName: "Balises H1-H6",
+        keep: [{ label: "URL", matchAny: ["url"] }, { label: "H1 absente", matchAny: ["h1 absente"] }],
+        where: { colMatchAny: ["h1 absente"], op: "equals_ci", value: "oui" },
+        limitRows: 15,
+        skipIfEmpty: true,
+    },
+    {
+        airtableField: "Img_que des H1 vides",
+        target: "audit",
+        mode: "transform",
+        tabName: "Balises H1-H6",
+        keep: [{ label: "URL", matchAny: ["url"] }, { label: "que des H1 vides", matchAny: ["que des h1 vides"] }],
+        where: { colMatchAny: ["que des h1 vides"], op: "equals_ci", value: "oui" },
+        limitRows: 15,
+        skipIfEmpty: true,
+    },
+    {
+        airtableField: "Img_au moins une H1 vide",
+        target: "audit",
+        mode: "transform",
+        tabName: "Balises H1-H6",
+        keep: [{ label: "URL", matchAny: ["url"] }, { label: "au moins une H1 vide", matchAny: ["au moins une h1 vide"] }],
+        where: { colMatchAny: ["au moins une h1 vide"], op: "equals_ci", value: "oui" },
+        limitRows: 15,
+        skipIfEmpty: true,
+    },
+    {
+        airtableField: "Img_1ère balise Hn n'est pas H1",
+        target: "audit",
+        mode: "transform",
+        tabName: "Balises H1-H6",
+        keep: [{ label: "URL", matchAny: ["url"] }, { label: "1ère balise Hn n'est pas H1", matchAny: ["1ere balise hn", "pas h1", "n'est pas h1"] }],
+        where: { colMatchAny: ["1ere balise hn", "pas h1", "n'est pas h1"], op: "equals_ci", value: "oui" },
+        limitRows: 15,
+        skipIfEmpty: true,
+    },
+    {
+        airtableField: "Img_Sauts de niveau entre les Hn",
+        target: "audit",
+        mode: "transform",
+        tabName: "Balises H1-H6",
+        keep: [{ label: "URL", matchAny: ["url"] }, { label: "Sauts de niveau entre les Hn", matchAny: ["sauts de niveau"] }],
+        where: { colMatchAny: ["sauts de niveau"], op: "number_not_zero" },
+        sort: { colMatchAny: ["sauts de niveau"], type: "number", order: "desc" },
+        limitRows: 15,
+        skipIfEmpty: true,
+    },
+    {
+        airtableField: "Img_Hn trop longue",
+        target: "audit",
+        mode: "transform",
+        tabName: "Balises H1-H6",
+        keep: [{ label: "URL", matchAny: ["url"] }, { label: "Hn trop longue", matchAny: ["hn trop longue"] }],
+        where: { colMatchAny: ["hn trop longue"], op: "number_eq", value: 1 },
+        sort: { colMatchAny: ["hn trop longue"], type: "number", order: "desc" },
+        limitRows: 15,
+        skipIfEmpty: true,
+    },
+
+    {
+        airtableField: "Img_longeur_page",
+        target: "audit",
+        mode: "transform",
+        tabName: "Nb mots body",
+        keep: "ALL",
+        sort: { colMatchAny: ["gravité", "gravite", "gravite du probleme"], type: "number", order: "desc" },
+        limitRows: 15,
+        skipIfEmpty: true,
+    },
+
+    {
+        airtableField: "Img_meta_description",
+        target: "audit",
+        mode: "transform",
+        tabName: "Meta desc",
+        keep: [{ label: "URL", matchAny: ["url"] }, { label: "Nb de caractères", matchAny: ["nb de caracteres", "caractere", "caracter"] }],
+        where: { colMatchAny: ["nb de caracteres", "caractere", "caracter"], op: "number_eq", value: 0 },
+        sort: { colMatchAny: ["nb de caracteres", "caractere", "caracter"], type: "number", order: "asc" },
+        limitRows: 15,
+        skipIfEmpty: true,
+    },
+
+    {
+        airtableField: "Img_balises_title",
+        target: "audit",
+        mode: "transform",
+        tabName: "Balise title",
+        keep: [{ label: "URL", matchAny: ["url"] }, { label: "État balise title", matchAny: ["etat", "état", "status"] }],
+        where: { colMatchAny: ["etat", "état", "status"], op: "includes_ci", value: "trop longue" },
+        limitRows: 15,
+        skipIfEmpty: true,
+    },
+
+    // ===== SHEET PLAN D'ACTION =====
+    // Plan d'action captures are done via direct Playwright screenshots (see sheet_plan_capture.js)
+];
+
+/**
+ * =========================
+ * GOOGLE SHEETS CLIENT (OAuth refresh_token)
+ * =========================
+ */
+function sheetsClient() {
+    const oauth2 = new google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET);
+    oauth2.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
+    return google.sheets({ version: "v4", auth: oauth2 });
+}
+
+function extractSpreadsheetId(url) {
+    if (!url) return null;
+    const m = String(url).match(/\/d\/([a-zA-Z0-9-_]+)/);
+    return m ? m[1] : null;
+}
+
+function norm(s) {
+    return String(s ?? "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .replace(/\s+/g, " ");
+}
+
+function toFloatAny(v) {
+    const s = String(v ?? "").trim();
+    if (!s) return NaN;
+    return parseFloat(s.replace(/\s/g, "").replace(",", "."));
+}
+
+function toBytes(v) {
+    const raw = String(v ?? "").trim();
+    if (!raw) return NaN;
+    const s = raw.toLowerCase().replace(/\s/g, "").replace(",", ".");
+    const n = parseFloat(s);
+    if (!Number.isFinite(n)) return NaN;
+    if (s.includes("mo") || s.includes("mb")) return n * 1024 * 1024;
+    if (s.includes("ko") || s.includes("kb")) return n * 1024;
+    return n;
+}
+
+function findColIndex(headers, matchAny) {
+    const H = headers.map(norm);
+    const targets = (matchAny || []).map(norm);
+    for (let i = 0; i < H.length; i++) {
+        for (const t of targets) if (t && H[i].includes(t)) return i;
+    }
+    return -1;
+}
+
+async function readTab(sheets, spreadsheetId, tabName) {
+    try {
+        const res = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range: `'${tabName.replace(/'/g, "''")}'!A1:ZZ`,
+            valueRenderOption: "FORMATTED_VALUE",
+        });
+        return res?.data?.values || [];
+    } catch (e) {
+        console.error(`[SHEETS-API] Erreur lecture onglet "${tabName}": ${e.message}`);
+        return [];
+    }
+}
+
+/**
+ * Trim colonnes vides à droite (pour éviter images avec 80% de blanc)
+ */
+function trimEmptyColumns(values) {
+    if (!values.length) return values;
+    const rows = values;
+    const maxCols = Math.max(...rows.map((r) => r.length));
+    let lastUsed = -1;
+
+    for (let c = 0; c < maxCols; c++) {
+        const used = rows.some((r) => String(r[c] ?? "").trim() !== "");
+        if (used) lastUsed = c;
+    }
+    if (lastUsed < 0) return [["(vide)"]];
+    return rows.map((r) => r.slice(0, lastUsed + 1));
+}
+
+function applyWhere(cell, where) {
+    const v = String(cell ?? "").trim();
+    if (!where) return true;
+
+    switch (where.op) {
+        case "equals_ci":
+            return norm(v) === norm(where.value);
+        case "includes_ci":
+            return norm(v).includes(norm(where.value));
+        case "number_eq": {
+            const n = toFloatAny(v);
+            return Number.isFinite(n) && n === Number(where.value);
+        }
+        case "number_not_zero": {
+            const n = toFloatAny(v);
+            return Number.isFinite(n) && n !== 0;
+        }
+        case "bytes_gte": {
+            const b = toBytes(v);
+            return Number.isFinite(b) && b >= Number(where.value);
+        }
+        default:
+            return true;
+    }
+}
+
+function sortRows(rows, colIdx, sort) {
+    if (!sort || colIdx < 0) return rows;
+    const dir = sort.order === "asc" ? 1 : -1;
+
+    const keyFn =
+        sort.type === "bytes"
+            ? (r) => toBytes(r[colIdx])
+            : sort.type === "number"
+                ? (r) => toFloatAny(r[colIdx])
+                : (r) => norm(r[colIdx]);
+
+    return rows.slice().sort((a, b) => {
+        const ka = keyFn(a);
+        const kb = keyFn(b);
+        const va = Number.isFinite(ka) ? ka : -Infinity;
+        const vb = Number.isFinite(kb) ? kb : -Infinity;
+        if (va < vb) return -1 * dir;
+        if (va > vb) return 1 * dir;
+        return 0;
+    });
+}
+
+function buildTable(values, cfg) {
+    if (!values || values.length === 0) return { table: null, reason: "Onglet vide / introuvable" };
+
+    const trimmed = trimEmptyColumns(values);
+    const header = trimmed[0] || [];
+    const data = trimmed.slice(1);
+
+    // RAW = juste trimming colonnes + return
+    if (cfg.mode === "raw") {
+        const rows = data.filter((r) => r.some((c) => String(c ?? "").trim() !== ""));
+        if (rows.length === 0) return { table: null, reason: "Aucune donnée" };
+        return { table: [header, ...rows] };
+    }
+
+    // TRANSFORM
+    let keepIdx = [];
+    let outHeader = [];
+
+    if (cfg.keep === "ALL") {
+        keepIdx = header.map((_, i) => i);
+        outHeader = header;
+    } else {
+        for (const col of cfg.keep) {
+            const idx = findColIndex(header, col.matchAny);
+            keepIdx.push(idx);
+            outHeader.push(idx >= 0 ? header[idx] : col.label);
+        }
+    }
+
+    const whereIdx = cfg.where ? findColIndex(header, cfg.where.colMatchAny) : -1;
+    let rows = data
+        .filter((r) => r.some((c) => String(c ?? "").trim() !== ""))
+        .filter((r) => (cfg.where ? (whereIdx >= 0 ? applyWhere(r[whereIdx], cfg.where) : false) : true));
+
+    if (rows.length === 0) {
+        return cfg.skipIfEmpty ? { table: null, reason: "Aucun match pour le filtre" } : { table: [outHeader] };
+    }
+
+    const sortIdx = cfg.sort ? findColIndex(header, cfg.sort.colMatchAny) : -1;
+    rows = sortRows(rows, sortIdx, cfg.sort);
+
+    if (cfg.limitRows) rows = rows.slice(0, cfg.limitRows);
+
+    const projected = rows.map((r) => keepIdx.map((i) => (i >= 0 ? r[i] ?? "" : "")));
+    return { table: [outHeader, ...projected] };
+}
+
+function renderHtmlTable({ title, table }) {
+    const headers = table[0] || [];
+    const rows = table.slice(1);
+
+    const ths = headers
+        .map((h) => `<th>${escapeHtml(String(h ?? ""))}</th>`)
+        .join("");
+
+    const trs = rows
+        .map((r) => {
+            const tds = headers
+                .map((_, i) => {
+                    const val = String(r[i] ?? "");
+                    // Detect URLs and make them blue like Google Sheets
+                    if (/^https?:\/\//i.test(val.trim())) {
+                        return `<td><span style="color:#1155cc;">${escapeHtml(val)}</span></td>`;
+                    }
+                    return `<td>${escapeHtml(val)}</td>`;
+                })
+                .join("");
+            return `<tr>${tds}</tr>`;
+        })
+        .join("");
+
+    return `<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #fff; }
+  .wrap {
+    display: inline-block;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+  }
+  table { border-collapse: collapse; }
+  thead th {
+    background: #f3f3f3;
+    border: 1px solid #e2e2e2;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #333;
+    text-align: left;
+    white-space: nowrap;
+  }
+  tbody td {
+    border: 1px solid #e2e2e2;
+    padding: 2px 8px;
+    font-size: 11px;
+    color: #333;
+    vertical-align: top;
+    white-space: nowrap;
+    max-width: 700px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  tbody tr:nth-child(even) td { background: #f8f9fa; }
+  tbody tr:nth-child(odd) td { background: #fff; }
+</style>
+</head>
+<body>
+  <div class="wrap" id="capture">
+    <table>
+      <thead><tr>${ths}</tr></thead>
+      <tbody>${trs}</tbody>
+    </table>
+  </div>
+</body>
+</html>`;
+}
+
+function escapeHtml(s) {
+    return s
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+async function htmlToPng(html, outPath) {
+    const browser = await chromium.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+
+    try {
+        const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+        await page.setContent(html, { waitUntil: "load" });
+
+        const el = page.locator("#capture");
+        await el.waitFor({ state: "visible", timeout: 15000 });
+
+        await el.screenshot({ path: outPath });
+
+        // Trim automatique des marges blanches éventuelles
+        const buf = await sharp(outPath).trim().toBuffer();
+        fs.writeFileSync(outPath, buf);
+    } finally {
+        await browser.close();
+    }
+}
+
+/**
+ * =========================
+ * POINT D'ENTRÉE DU MODULE
+ * =========================
+ */
+export async function auditGoogleSheetsAPI(sheetAuditUrl, sheetPlanUrl, auditId) {
+    const auditSpreadsheetId = extractSpreadsheetId(sheetAuditUrl);
+    const planSpreadsheetId = extractSpreadsheetId(sheetPlanUrl);
+
+    if (!auditSpreadsheetId) {
+        console.error("[SHEETS-API] URL de sheet audit invalide.");
+        return { error: "URL Sheet Audit invalide." };
+    }
+
+    const sheets = sheetsClient();
+    const results = {};
+
+    console.log(`[SHEETS-API] Démarrage (Audit: ${auditSpreadsheetId}, Plan: ${planSpreadsheetId || 'N/A'})`);
+
+    for (const cfg of CAPTURE_CONFIGS) {
+        const spreadsheetId = cfg.target === "audit" ? auditSpreadsheetId : planSpreadsheetId;
+        if (!spreadsheetId) continue;
+
+        try {
+            const values = await readTab(sheets, spreadsheetId, cfg.tabName);
+            const built = buildTable(values, cfg);
+
+            if (!built.table) {
+                results[cfg.airtableField] = { statut: "SKIP", details: built.reason || "Aucune donnée" };
+                continue;
+            }
+
+            console.log(`[SHEETS-API] Rendu HTML pour ${cfg.airtableField} (${cfg.tabName})`);
+            const html = renderHtmlTable({
+                title: `${cfg.target.toUpperCase()} — ${cfg.tabName}`,
+                table: built.table,
+            });
+
+            const tmpDir = process.env.RAILWAY_ENVIRONMENT ? "/tmp" : ".";
+            const pngPath = path.join(tmpDir, `sheet_${cfg.airtableField}_${uuidv4()}.png`);
+
+            await htmlToPng(html, pngPath);
+
+            const cloudinaryUrl = await uploadToCloudinary(
+                pngPath,
+                `audit-results/${auditId}`
+            );
+
+            if (fs.existsSync(pngPath)) fs.unlinkSync(pngPath);
+
+            results[cfg.airtableField] = {
+                statut: "SUCCESS",
+                capture: cloudinaryUrl?.secure_url || cloudinaryUrl?.url || cloudinaryUrl,
+                details: `${built.table.length - 1} lignes.`
+            };
+        } catch (e) {
+            console.error(`[SHEETS-API] Erreur sur ${cfg.airtableField}: ${e.message}`);
+            results[cfg.airtableField] = { statut: "FAILED", details: e.message };
+        }
+    }
+
+    return results;
+}

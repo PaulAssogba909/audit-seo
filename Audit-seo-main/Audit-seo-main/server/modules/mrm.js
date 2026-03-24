@@ -1,0 +1,133 @@
+import { chromium } from 'playwright';
+import sharp from 'sharp';
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { uploadToCloudinary } from '../utils/cloudinary.js';
+import { analyzeImage } from '../utils/openai.js';
+import { decrypt } from '../utils/encrypt.js';
+import { sanitizeCookies } from '../utils/cookies.js';
+
+// ── AI crop helper ────────────────────────────────────────────────────────────
+async function cropWithAI(imagePath, prompt) {
+    try {
+        const response = await analyzeImage(imagePath, prompt);
+        const match = response.match(/CROP:\s*x=(\d+),\s*y=(\d+),\s*width=(\d+),\s*height=(\d+)/i);
+        if (!match) return imagePath;
+        const [, x, y, w, h] = match.map(Number);
+        const meta = await sharp(imagePath).metadata();
+        const left = Math.min(x, meta.width - 10);
+        const top = Math.min(y, meta.height - 10);
+        const width = Math.min(w, meta.width - left);
+        const height = Math.min(h, meta.height - top);
+        if (width < 20 || height < 20) return imagePath;
+        const croppedPath = imagePath.replace('.png', '_cropped.png');
+        await sharp(imagePath).extract({ left, top, width, height }).toFile(croppedPath);
+        fs.unlinkSync(imagePath);
+        return croppedPath;
+    } catch (e) {
+        console.warn(`[MRM] AI crop failed: ${e.message}`);
+        return imagePath;
+    }
+}
+
+//  MY RANKING METRICS — Profondeur des pages
+export async function captureMrmProfondeur(mrmReportUrl, auditId, cookies) {
+    const result = { statut: 'ERROR', capture: null };
+
+    if (!cookies || !cookies.length) {
+        result.statut = 'SKIP';
+        result.details = 'Session MRM non configurée ou invalide';
+        return result;
+    }
+
+    const browser = await chromium.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    const context = await browser.newContext({
+        viewport: { width: 1400, height: 900 },
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        locale: 'fr-FR'
+    });
+    const cleanCookies = sanitizeCookies(cookies);
+    await context.addCookies(cleanCookies);
+    const page = await context.newPage();
+    page.setDefaultTimeout(90000);
+
+    try {
+        console.log(`[MRM] Navigating to: ${mrmReportUrl}`);
+        console.log(`[MRM] Cookies injected: ${cookies.length} cookies`);
+        await page.goto(mrmReportUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(5000);
+
+        // Vérifier si on est toujours connectés
+        const currentUrl = page.url();
+        console.log(`[MRM] Current URL after navigation: ${currentUrl}`);
+        if (currentUrl.includes('login') || currentUrl.includes('signin') || currentUrl.includes('connexion')) {
+            result.statut = 'SKIP';
+            result.details = `Session MRM expirée — redirigé vers: ${currentUrl}`;
+            console.error(`[MRM] ❌ Session expired — redirected to: ${currentUrl}`);
+            return result;
+        }
+
+        // Stratégie de scroll pour MRM Section 4
+        let tableEl = page.locator('table').first();
+        try {
+            console.log(`[MRM] Hunting for section 4 ("Profondeur")...`);
+
+            // 1. Cibler le conteneur principal ou le titre
+            const sectionHeader = page.locator('h2#profondeur').first();
+
+            if (await sectionHeader.isVisible()) {
+                console.log(`[MRM] Found section by h2#profondeur.`);
+                await sectionHeader.scrollIntoViewIfNeeded();
+                await page.waitForTimeout(500);
+            }
+
+            // 2. Trouver le tableau de données de la section 4.1 (Profondeur)
+            tableEl = page.locator('#profondeur, #s4\\.1').locator('xpath=following::table').first();
+
+            if (await tableEl.isVisible()) {
+                console.log(`[MRM] Found depth table. Scrolling...`);
+                await tableEl.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+                await page.evaluate(() => window.scrollBy(0, -150));
+                console.log(`[MRM] ✅ Scrolled to Section 4 table.`);
+            } else {
+                console.warn(`[MRM] Table not found with XPath, searching by class.`);
+                tableEl = page.locator('.tablecenter').first();
+                await tableEl.scrollIntoViewIfNeeded();
+            }
+
+            await page.waitForTimeout(3000);
+        } catch (err) {
+            console.warn(`[MRM] ⚠️ Precise section 4 scrolling failed: ${err.message}.`);
+            await page.locator('table').first().scrollIntoViewIfNeeded().catch(() => { });
+        }
+
+        const tmpPath = path.resolve(`temp_mrm_${uuidv4()}.png`);
+
+        // Screenshot du TABLEAU uniquement (plus propre que la page entière)
+        if (await tableEl.isVisible()) {
+            await tableEl.screenshot({ path: tmpPath });
+        } else {
+            await page.screenshot({ path: tmpPath, fullPage: false });
+        }
+
+        const prompt = `Cette image montre un tableau de données My Ranking Metrics sur la profondeur des pages.
+Rogne pour ne garder que le tableau, sans aucun menu ni chrome de l'application.
+CROP: x=[left], y=[top], width=[largeur], height=[hauteur]`;
+
+        const croppedPath = await cropWithAI(tmpPath, prompt);
+        const uploaded = await uploadToCloudinary(croppedPath, `audit-results/mrm-profondeur-${auditId}`);
+        if (fs.existsSync(croppedPath)) fs.unlinkSync(croppedPath);
+        if (fs.existsSync(tmpPath) && tmpPath !== croppedPath) fs.unlinkSync(tmpPath);
+
+        result.capture = uploaded?.secure_url || uploaded?.url || uploaded;
+        result.statut = 'SUCCESS';
+    } catch (e) {
+        result.details = e.message;
+        console.error('[MRM] Error:', e.message);
+    } finally { await browser.close(); }
+    return result;
+}
