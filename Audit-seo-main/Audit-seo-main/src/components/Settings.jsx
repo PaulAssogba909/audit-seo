@@ -1,3 +1,4 @@
+import { authFetch, authHeaders } from '../App';
 import React, { useState, useEffect } from 'react';
 import { Settings as SettingsIcon, Globe, Lock, CheckCircle2, AlertCircle, ClipboardPaste, Save, Trash2 } from 'lucide-react';
 
@@ -37,7 +38,7 @@ const Settings = () => {
     const fetchStatus = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('/api/sessions/status', {
+            const res = await authFetch('/api/sessions/status', {
                 headers: { 'Authorization': `Bearer ${token}` },
                 credentials: 'include'
             });
