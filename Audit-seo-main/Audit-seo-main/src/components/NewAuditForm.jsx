@@ -1,3 +1,4 @@
+import { authFetch, authHeaders } from '../App';
 import React, { useState } from 'react';
 import { Send, Globe, FileSpreadsheet, FileBarChart } from 'lucide-react';
 
@@ -27,7 +28,7 @@ const NewAuditForm = ({ onAuditSuccess }) => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/audits', {
+            const response = await authFetch('/api/audits', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
