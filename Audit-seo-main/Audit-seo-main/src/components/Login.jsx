@@ -34,7 +34,7 @@ export default function Login({ onLogin }) {
                     setPassword('');
                     setConfirmPassword('');
                 } else {
-                    onLogin(data.user);
+                    onLogin(data.user, data.token);
                 }
             } else {
                 alert(data.error);
