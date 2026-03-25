@@ -67,7 +67,7 @@ const GOOGLE_SHEETS_ID_KEYS = new Set([
 ]);
 
 app.use(cors({
-    origin: 'http://localhost:5173', // Vite default
+    origin: function(origin, cb) { const allowed = ['http://localhost:5173','http://localhost:3000',process.env.FRONTEND_URL,'https://audit-seo-umber.vercel.app'].filter(Boolean); if (!origin || allowed.includes(origin)) cb(null, true); else cb(null, true); }, exposedHeaders: ['Authorization'],
     credentials: true
 }));
 app.use(express.json());
@@ -87,7 +87,7 @@ app.use(express.static(distPath));
 
 // Auth Middleware
 const authenticateToken = (req, res, next) => {
-    const token = req.cookies.token;
+    let token = null; const authH = req.headers['authorization']; if (authH && authH.startsWith('Bearer ')) { token = authH.split(' ')[1]; } else if (req.cookies && req.cookies.token) { token = req.cookies.token; }
     if (!token) return res.sendStatus(401);
 
     jwt.verify(token, SECRET_KEY, (err, user) => {
@@ -734,16 +734,16 @@ app.post('/api/auth/login', async (req, res) => {
             // Success: Reset attempts
             loginAttempts.delete(email);
 
-            const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: '24h' });
+            const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: '7d' });
 
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 24 * 60 * 60 * 1000
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                maxAge: 7 * 24 * 60 * 60 * 1000
             });
 
-            res.json({ user: { email: user.email, id: user.id } });
+            res.json({ token, user: { email: user.email, id: user.id } });
         } else {
             // Fail: Increment attempts
             attempts.count += 1;
