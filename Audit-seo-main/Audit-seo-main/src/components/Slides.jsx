@@ -1,3 +1,4 @@
+import { authFetch, authHeaders } from '../App';
 import React, { useEffect, useState } from 'react';
 import {
     AlertCircle,
@@ -82,7 +83,7 @@ function Slides() {
         }
 
         try {
-            const response = await fetch('/api/audits', {
+            const response = await authFetch('/api/audits', {
                 credentials: 'include'
             });
 
