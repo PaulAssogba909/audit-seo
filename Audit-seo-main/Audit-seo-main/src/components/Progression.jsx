@@ -1,3 +1,4 @@
+import { authFetch, authHeaders } from '../App';
 import React, { useState, useEffect } from 'react';
 import {
     BarChart3,
@@ -244,7 +245,7 @@ const Progression = ({ onOpenSlides }) => {
 
     const fetchAudits = async () => {
         try {
-            const response = await fetch('/api/audits', {
+            const response = await authFetch('/api/audits', {
                 credentials: 'include'
             });
             if (response.ok) {
