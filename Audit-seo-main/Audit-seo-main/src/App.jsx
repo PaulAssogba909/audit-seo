@@ -51,7 +51,7 @@ function App() {
           });
   };
 
-  if (loading) return <div className="loading">Chargement...</div>div>;
+  if (loading) return <div className="loading">Chargement...</div>;
     if (!user) return <Login onLogin={handleLogin} />;
     return <Dashboard user={user} onLogout={handleLogout} />;
 }
